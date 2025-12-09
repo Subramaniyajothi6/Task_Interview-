@@ -1,0 +1,46 @@
+/* Full page background */
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #caf0f880, #e0f7fa90);
+}
+
+/* Card container */
+.auth-card {
+    max-width: 500px;
+    margin: auto;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* Title */
+.auth-card h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Badge styling */
+.badge-tech {
+    font-size: 0.75rem;
+    margin: 0 4px;
+    padding: 5px 10px;
+}
+
+/* Buttons bigger and rounded */
+.btn-lg {
+    padding: 0.6rem 1.6rem;
+    font-size: 1rem;
+    border-radius: 50px;
+}
+
+/* Responsive spacing */
+@media (max-width: 576px) {
+    .auth-card {
+        padding: 2rem 1.3rem !important;
+    }
+}
