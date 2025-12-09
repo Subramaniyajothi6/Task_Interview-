@@ -1,10 +1,10 @@
 import mongoose  from "mongoose";
-
+import { MONGO_URI } from "./config";
 const connectDB = async () => {
 
     try {
 
-        await mongoose.connect("mongodb+srv://subramaniyajothi2002:sritharpeter6@cluster0.ldqjnek.mongodb.net/interview_auth");
+        await mongoose.connect(MONGO_URI);
 
         console.log("MongoDB connected");
     }

@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 import { redisClient } from '../config/redis.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { JWT_SECRET } from '../config/config.js';
 
 
 const router = express.Router();
@@ -56,7 +57,7 @@ router.post('/login',async (req, res)=>{
 
         const token = jwt.sign(
             {userId:user._id},
-            'secret_key_here',
+            JWT_SECRET,
             {expiresIn:'1d'}
         );
 

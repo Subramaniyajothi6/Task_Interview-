@@ -1,6 +1,7 @@
 
 import jwt from "jsonwebtoken";
 import { redisClient } from "../config/redis.js";
+import { JWT_SECRET } from "../config/config.js";
 
 
 
@@ -12,7 +13,7 @@ export const authMiddleware = async (req, res, next) => {
       return res.json({ success: false, message: "No token provided" });
 
     // Verify JWT
-    const decoded = jwt.verify(token, "secret_key_here");
+    const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded.userId;
 
     // Check Redis session
