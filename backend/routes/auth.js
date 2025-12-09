@@ -1,116 +1,121 @@
-import express from 'express';
-import bcrypt from 'bcrypt';
-import User from '../models/User.js';
-import jwt from 'jsonwebtoken';
-import { redisClient } from '../config/redis.js';
-import { authMiddleware } from '../middleware/auth.js';
-import { JWT_SECRET } from '../config/config.js';
+import express from "express";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { mysqlPool } from "../config/mysql.js";
+import { redisClient } from "../config/redis.js";
+import Profile from "../models/Profile.js";
+import { authMiddleware } from "../middleware/auth.js";
+import dotenv from "dotenv";
 
-
+dotenv.config();
 const router = express.Router();
 
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res.json({ success: false, message: "All fields are required" });
 
-router.post('/register',async (req,res) =>{
-    try {
-        
-        const {name , email , password } = req.body;
-        if(!name || !email || !password){
-            return res.json({success:false,message:'All fields are required'}) ;
-        }
+    const [exists] = await mysqlPool.execute(
+      "SELECT id FROM users WHERE email = ?",
+      [email]
+    );
+    if (exists.length > 0)
+      return res.json({ success: false, message: "Email already exists" });
 
-        const existingUser = await User.findOne({email});
-        if(existingUser){
-            return res.json({success:false , message :'Email Already Exists'}) ;
-        }
+    const hashed = await bcrypt.hash(password, 10);
 
-        const hashed = await bcrypt.hash(password,10);
+    const [result] = await mysqlPool.execute(
+      "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+      [name, email, hashed]
+    );
 
-        await User.create({name,email,passwordHash:hashed});
+    await Profile.create({ userId: result.insertId });
 
-        res.json({success:true ,message :'Registered Successfully'})
-    } catch (error) {
-
-        res.json({success:false , message : 'Server Error'})
-        
-    }
+    res.json({ success: true, message: "Registered successfully" });
+  } catch (err) {
+    res.json({ success: false, message: "Server error" });
+  }
 });
 
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password)
+      return res.json({ success: false, message: "All fields are required" });
 
-router.post('/login',async (req, res)=>{
-    try {
-        
-        const {email,password } = req.body;
+    const [rows] = await mysqlPool.execute(
+      "SELECT id, password_hash FROM users WHERE email = ?",
+      [email]
+    );
+    if (rows.length === 0)
+      return res.json({ success: false, message: "User not found" });
 
-        if(!email || !password){
-            return res.json({success:false , message :'All Fields Are Required'});
-        }
-        const user = await User.findOne({email});
-        if(!user){
-            return res.json({success:false , message:'User Not Found'});
-        }
+    const user = rows[0];
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid)
+      return res.json({ success: false, message: "Invalid password" });
 
-        const valid = await bcrypt.compare(password , user.passwordHash);
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-        if(!valid){
-            return res.json({success:false , message:'Invalid Password'});
-        }
+    await redisClient.set(`session:${user.id}`, token);
 
-        const token = jwt.sign(
-            {userId:user._id},
-            JWT_SECRET,
-            {expiresIn:'1d'}
-        );
+    res.json({
+      success: true,
+      message: "Login successful",
+      token,
+      userId: user.id
+    });
+  } catch (err) {
+    res.json({ success: false, message: "Server error" });
+  }
+});
 
-        await redisClient.set(`session:${user._id}`,token);
-
-        res.json({
-            success:true,
-            message:'Login Successful',
-            token,
-            userId:user._id,
-        });
-
-
-
-    } catch (error) {
-
-        res.jons({success:false , message:error.message || 'Server Error'});
-        
-    }
-})
-
-
-
+router.put("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { age, dob, contact } = req.body;
+    await Profile.findOneAndUpdate(
+      { userId: req.userId },
+      { age, dob, contact }
+    );
+    res.json({ success: true, message: "Profile updated" });
+  } catch (err) {
+    res.json({ success: false, message: "Update failed" });
+  }
+});
 
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-passwordHash");
-    if (!user) return res.json({ success: false, message: "User not found" });
+    const profile = await Profile.findOne({ userId: req.userId });
 
-    res.json({ success: true, data: user });
+    const [rows] = await mysqlPool.execute(
+      "SELECT name, email FROM users WHERE id = ?",
+      [req.userId]
+    );
+
+    if (!rows.length)
+      return res.json({ success: false, message: "User not found" });
+
+    res.json({
+      success: true,
+      data: {
+        name: rows[0].name,
+        email: rows[0].email,
+        age: profile ? profile.age : "",
+        dob: profile ? profile.dob : "",
+        contact: profile ? profile.contact : ""
+      }
+    });
   } catch (err) {
     res.json({ success: false, message: "Error fetching profile" });
   }
 });
 
 
-
-router.put("/profile", authMiddleware, async (req, res) => {
-  try {
-    const { age, dob, contact } = req.body;
-
-    await User.findByIdAndUpdate(req.userId, { age, dob, contact });
-
-    res.json({ success: true, message: "Profile Updated" });
-  } catch (err) {
-    res.json({ success: false, message: "Update failed" });
-  }
-});
-
-
-
 export default router;
-
-
 
 

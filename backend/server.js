@@ -3,6 +3,7 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import router from './routes/auth.js';
 import { connectRedis } from './config/redis.js';
+import { mysqlPool } from "./config/mysql.js";
 
 
 const app = express();
@@ -11,6 +12,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+mysqlPool.getConnection()
+  .then(() => console.log("MySQL Connected"))
+  .catch((err) => console.log("MySQL Error:", err));
 
 
 connectDB();
