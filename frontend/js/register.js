@@ -1,5 +1,4 @@
 
-
 $("#registerForm").on("submit", function (e) {
     e.preventDefault();
 
