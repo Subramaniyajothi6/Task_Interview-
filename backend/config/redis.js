@@ -3,11 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const redisClient = createClient({
-  url: process.env.REDIS_URL,
-  socket: {
-    tls: true,
-    rejectUnauthorized: false
-  }
+  url: process.env.REDIS_URL
 });
 
 redisClient.on("error", (err) => {
@@ -15,9 +11,13 @@ redisClient.on("error", (err) => {
 });
 
 export async function connectRedis() {
-  if (!redisClient.isOpen) {
-    await redisClient.connect();
-    console.log("Redis Connected");
+  try {
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+      console.log("Redis Connected");
+    }
+  } catch (err) {
+    console.error("Redis Connect Error:", err);
   }
 }
 
