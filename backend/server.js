@@ -14,10 +14,15 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-mysqlPool.getConnection()
-  .then(() => console.log("MySQL Connected"))
-  .catch((err) => console.log("MySQL Error:", err));
 
+(async () => {
+  try {
+    await mysqlPool.getConnection();
+    console.log("MySQL Connected");
+  } catch (err) {
+    console.error("MySQL Error:", err);
+  }
+})();
 
 connectDB();
 connectRedis();
