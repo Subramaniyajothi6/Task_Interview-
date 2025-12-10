@@ -34,8 +34,9 @@ router.post("/register", async (req, res) => {
 
     res.json({ success: true, message: "Registered successfully" });
   } catch (err) {
-    res.json({ success: false, message: "Server error" });
-  }
+  console.error("REGISTER ERROR:", err);
+  res.json({ success: false, message: err.message });
+}
 });
 
 router.post("/login", async (req, res) => {
@@ -71,7 +72,7 @@ router.post("/login", async (req, res) => {
       userId: user.id
     });
   } catch (err) {
-    res.json({ success: false, message: "Server error" });
+    res.json({ success: false, message: "Server error", error: err.message });
   }
 });
 
@@ -84,7 +85,7 @@ router.put("/profile", authMiddleware, async (req, res) => {
     );
     res.json({ success: true, message: "Profile updated" });
   } catch (err) {
-    res.json({ success: false, message: "Update failed" });
+    res.json({ success: false, message: "Update failed", error: err.message });
   }
 });
 
@@ -98,7 +99,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
     );
 
     if (!rows.length)
-      return res.json({ success: false, message: "User not found" });
+      return res.json({ success: false, message: "User not found", error: err.message });
 
     res.json({
       success: true,
@@ -111,7 +112,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
       }
     });
   } catch (err) {
-    res.json({ success: false, message: "Error fetching profile" });
+    res.json({ success: false, message: "Error fetching profile", error: err.message });
   }
 });
 
