@@ -8,7 +8,7 @@ $('#loginForm').on('submit',function(e){
     };
 
     $.ajax({
-        url:'http://localhost:5000/api/auth/login',
+        url:'https://taskinterview-production.up.railway.app/api/auth/login',
         method:'POST',
         contentType:'application/json',
         data:JSON.stringify(data),

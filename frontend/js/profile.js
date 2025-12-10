@@ -6,7 +6,7 @@ if (!localStorage.getItem('token')) {
 
 
 $.ajax({
-    url: 'http://localhost:5000/api/auth/profile',
+    url: 'https://taskinterview-production.up.railway.app/api/auth/profile',
     method: 'GET',
     headers: {
         'Authorization': localStorage.getItem('token')
@@ -40,7 +40,7 @@ $("#profileForm").on("submit", function (e) {
     };
 
     $.ajax({
-        url: "http://localhost:5000/api/auth/profile",
+        url: "https://taskinterview-production.up.railway.app/api/auth/profile",
         method: "PUT",
         headers: {
             "Authorization": localStorage.getItem("token"),

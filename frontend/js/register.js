@@ -10,7 +10,7 @@ $("#registerForm").on("submit", function (e) {
     };
 
     $.ajax({
-        url: "http://localhost:5000/api/auth/register",
+        url: "https://taskinterview-production.up.railway.app/api/auth/register",
         method: "POST",
         contentType: "application/json",
         data: JSON.stringify(data),
