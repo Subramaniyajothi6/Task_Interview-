@@ -10,14 +10,15 @@ dotenv.config();
 
 const app = express();
 
-//  middleware
 
 app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: "http://127.0.0.1:5500",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
-app.use(express.json());
+
+app.options("*", cors());
 
 (async () => {
   try {
